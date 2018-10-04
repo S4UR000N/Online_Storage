@@ -6,5 +6,55 @@ namespace App\Http\Controllers\DynamicController;
 // class
 class YouController {
 	public function get() { return view('DynamicView/you'); }
-	public function post() {}
+	public function post() {
+		// Final View Data
+		$View = array();
+
+		// Error Boolean
+		$err_bool = 0;
+
+		// Target dir/file/extension
+		$target_dir = "uploads/";
+		$target_file = $target_dir . basename($_FILES['img_up']['name']);
+		$target_extension = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+		// Check if File is real/fake image
+		$check = getimagesize($_FILES['img_up']['tmp_name']);
+    if($check === false) { array_push($View, "File is not an image!"); $err_bool = 1; }
+
+		// Check if File already Exists
+		if($err_bool == 0) { if(file_exists($target_file) ) { array_push($View, "File already exists!"); $err_bool = 1; } }
+
+		// Check File Size
+		if($err_bool == 0) { if($_FILES['img_up']['size'] > 500000) { array_push($View, "File is too large!"); $err_bool = 1; } }
+
+		// Allow only jpeg/jpg/png/gif
+		if($err_bool == 0) {
+			if($target_extension != "jpeg" && $target_extension != "jpg" && $target_extension != "png" &&  $target_extension != "gif") {
+				array_push($View, "Invalid file type!"); $err_bool = 1;
+			}
+		}
+
+		// Save Data and Return View
+		if($err_bool == 1) { return view('DynamicView/you', compact('View')); }
+		else {
+			// Store File
+			if(move_uploaded_file($_FILES['img_up']['tmp_name'], $target_file)) {
+				// Save File Path to Database
+				$file = new \App\Files;
+			  $file->id = $_SESSION['id'];
+			  $file->file = $target_file;
+			  $file->save();
+
+				// Return View With Success Message
+				array_push($View, "File Uploaded!");
+				return view('DynamicView/you', compact('View'));
+    	}
+			else {
+			 // Return View With Fail Message
+			 array_push($View, "File Upload Failed!");
+			 return view('DynamicView/you', compact('View'));
+		  }
+	 	}
+	}
 }

@@ -8,7 +8,6 @@ class Files extends Model
 {
     // editable columns
 		protected $fillable = [
-			'file',
-			'deleted_at'
+			'deleted_at',
 		];
 }

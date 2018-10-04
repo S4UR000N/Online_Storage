@@ -16,7 +16,7 @@
 Route::get('/', 'StaticController@home');
 
 // FAQ
-Route::get('/FAQ', 'StaticController@faq');
+Route::get('/faq', 'StaticController@faq');
 
 /* Dynamic Pages */
 // You
@@ -35,3 +35,9 @@ Route::post('/signin', 'FormController\SignInController@post');
 
 // Sign Out
 Route::get('/signout', 'FormController\SignOutController@get');
+
+// Activate
+Route::get('/activate', 'FormController\ActivateController@get');
+
+/* Testing Ground */
+Route::get('/test', 'TestController@test');
