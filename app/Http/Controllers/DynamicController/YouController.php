@@ -48,13 +48,42 @@ class YouController {
 		/* Branch Upload & Delete */
 		// Delete Branch
 		if(isset($_POST['fid'])) {
-			$DB = \DB::table('files')->where("fid", $_POST['fid'])->delete();
+			// Delete File
+			$DBdelete = \DB::table('files')->where("fid", $_POST['fid'])->delete();
 			$unlink = unlink($_POST['file']);
-			if($DB == 1 && $unlink == true) {
-				return view('DynamicView/you')->with('alert', 'File Deleted Succuessfully (:');
+
+			// Get All Image Files of the User
+			$DBselect = \DB::select('SELECT fid, file FROM files WHERE id = :id', ['id' => $_SESSION['id']]);
+
+			// Image type Holders
+			$hold = array(
+	 		 'jpeg' => array(),
+	 		 'jpg' => array(),
+	 		 'png' => array(),
+	 		 'gif' => array()
+	 		 );
+
+			// Sort Images
+			foreach($DBselect as $d) {
+	 			// extract extension
+	 			$ext = pathinfo($d->file, PATHINFO_EXTENSION);
+
+	 			// push to one of the holders
+	 			if($ext == "jpeg") { $hold['jpeg'][$d->fid] = $d->file; }
+	 			if($ext == "jpg") { $hold['jpg'][$d->fid] = $d->file; }
+				if($ext == "png") { $hold['png'][$d->fid] = $d->file; }
+				if($ext == "gif") { $hold['gif'][$d->fid] = $d->file; }
+			}
+
+			// Push nonempty Data  to View
+			foreach($hold as $key => $val) { if(!empty($val)) { $BaseView[$key] = $val; } }
+
+			// Return Proper View
+			if($DBdelete == 1 && $unlink == true) {
+				return view('DynamicView/you', compact('BaseView'))->with('alert', 'File Deleted Succuessfully (:');
 			}
 			else {
-				return view('DynamicView/you')->with('alert', '\"File Deletion Failed ):\"');
+				return view('DynamicView/you', compact('BaseView'))->with('alert', 'File Deletion Failed ):');
 			}
 		}
 		// Upload Branch

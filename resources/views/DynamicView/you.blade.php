@@ -32,8 +32,8 @@
 
    <!-- Modal Header -->
    <div class="modal-header">
-    <span class="col-sm-5"></span>
-    <h1 class="col-sm-6">Download</h1>
+    <span class="col-sm-3"></span>
+    <h1 class="col-sm-6" style="margin-left: 3%;">Click to Download</h1>
     <button class="close" data-dismiss="modal">&times;</button>
    </div>
 
@@ -42,7 +42,6 @@
 
    <!-- Modal footer -->
    <div class="modal-footer">
-    <button id="download_image" class="btn btn-success">Download Image</button>
    </div>
 
   </div>
@@ -168,8 +167,11 @@ function delete_image(fid, file) {
 function download() {
   var $imgs = $('.imgs');
   var $download_body = $("#download_body");
-  var $download_image_btn = $("#download_image");
 
+  // empty old Content
+  $download_body.html("");
+
+  // new Content
   var download_body_upgrade = document.createElement("div");
   download_body_upgrade.setAttribute("class", "column");
 
@@ -177,14 +179,17 @@ function download() {
     var download_component_container = document.createElement("div");
     download_component_container.setAttribute("class", "row");
 
+    var a = document.createElement("a");
     var btn = document.createElement("button");
 
+    a.setAttribute("href", $imgs.eq(i).attr("data-file"));
+    a.setAttribute("download", "");
+
     btn.innerHTML = $imgs.eq(i).html();
-    btn.setAttribute("data-fid", $imgs.eq(i).attr("data-fid"));
-    btn.setAttribute("data-file", $imgs.eq(i).attr("data-file"));
     btn.setAttribute("class", "btn bg-secondary text-white mt-1");
 
-    download_component_container.appendChild(btn);
+    a.appendChild(btn)
+    download_component_container.appendChild(a);
     download_body_upgrade.appendChild(download_component_container);
   }
   $download_body.append(download_body_upgrade);
