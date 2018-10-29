@@ -9,33 +9,9 @@ class YouController {
 		// Final View Data
 		$BaseView = array();
 
-
-		// Get All Image Files of the User
-		$DB = \DB::select('SELECT fid, file FROM files WHERE id = :id', ['id' => $_SESSION['id']]);
-
-		// Image type Holders
-		$hold = array(
- 		 'jpeg' => array(),
- 		 'jpg' => array(),
- 		 'png' => array(),
- 		 'gif' => array()
- 		 );
-
-		// Sort Images
-		foreach($DB as $d) {
- 			// extract extension
- 			$ext = pathinfo($d->file, PATHINFO_EXTENSION);
-
- 			// push to one of the holders
- 			if($ext == "jpeg") { $hold['jpeg'][$d->fid] = $d->file; }
- 			if($ext == "jpg") { $hold['jpg'][$d->fid] = $d->file; }
-			if($ext == "png") { $hold['png'][$d->fid] = $d->file; }
-			if($ext == "gif") { $hold['gif'][$d->fid] = $d->file; }
-		}
-
-		// Push nonempty Data  to View
-		foreach($hold as $key => $val) { if(!empty($val)) { $BaseView[$key] = $val; } }
-
+		// Select * User Files and return to $BaseView
+		$YouRepo = new \App\Http\Controllers\Repository\DynamicRepository\YouRepository;
+		$BaseView = $YouRepo->selectUserFiles($BaseView);
 
 		// Return View
 		return view('DynamicView/you', compact('BaseView'));
@@ -52,31 +28,9 @@ class YouController {
 			$DBdelete = \DB::table('files')->where("fid", $_POST['fid'])->delete();
 			$unlink = unlink($_POST['file']);
 
-			// Get All Image Files of the User
-			$DBselect = \DB::select('SELECT fid, file FROM files WHERE id = :id', ['id' => $_SESSION['id']]);
-
-			// Image type Holders
-			$hold = array(
-	 		 'jpeg' => array(),
-	 		 'jpg' => array(),
-	 		 'png' => array(),
-	 		 'gif' => array()
-	 		 );
-
-			// Sort Images
-			foreach($DBselect as $d) {
-	 			// extract extension
-	 			$ext = pathinfo($d->file, PATHINFO_EXTENSION);
-
-	 			// push to one of the holders
-	 			if($ext == "jpeg") { $hold['jpeg'][$d->fid] = $d->file; }
-	 			if($ext == "jpg") { $hold['jpg'][$d->fid] = $d->file; }
-				if($ext == "png") { $hold['png'][$d->fid] = $d->file; }
-				if($ext == "gif") { $hold['gif'][$d->fid] = $d->file; }
-			}
-
-			// Push nonempty Data  to View
-			foreach($hold as $key => $val) { if(!empty($val)) { $BaseView[$key] = $val; } }
+			// Select * User Files and return to $BaseView
+			$YouRepo = new \App\Http\Controllers\Repository\DynamicRepository\YouRepository;
+			$BaseView = $YouRepo->selectUserFiles($BaseView);
 
 			// Return Proper View
 			if($DBdelete == 1 && $unlink == true) {
@@ -88,61 +42,20 @@ class YouController {
 		}
 		// Upload Branch
 		else {
-			// Get All Image Files of the User
-			$DB = \DB::select('SELECT fid, file FROM files WHERE id = :id', ['id' => $_SESSION['id']]);
+			// Select * User Files and return to $BaseView
+			$YouRepo = new \App\Http\Controllers\Repository\DynamicRepository\YouRepository;
+			$BaseView = $YouRepo->selectUserFiles($BaseView);
 
-			// Image type Holders
-			$hold = array(
-	 		 'jpeg' => array(),
-	 		 'jpg' => array(),
-	 		 'png' => array(),
-	 		 'gif' => array()
-	 		 );
-
-			// Sort Images
-			foreach($DB as $d) {
-	 			// extract extension
-	 			$ext = pathinfo($d->file, PATHINFO_EXTENSION);
-
-	 			// push to one of the holders
-	 			if($ext == "jpeg") { $hold['jpeg'][$d->fid] = $d->file; }
-	 			if($ext == "jpg") { $hold['jpg'][$d->fid] = $d->file; }
-				if($ext == "png") { $hold['png'][$d->fid] = $d->file; }
-				if($ext == "gif") { $hold['gif'][$d->fid] = $d->file; }
-			}
-
-			// Push nonempty Data  to View
-			foreach($hold as $key => $val) { if(!empty($val)) { $BaseView[$key] = $val; } }
-
-
-			// Error Boolean
-			$err_bool = 0;
-
-			// Target dir/file/extension
-			$target_dir = "uploads/" . $_SESSION['id'];
-			$target_file = $target_dir . basename($_FILES['img_up']['name']);
-			$target_extension = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-			// Check if File is real/fake image
-			$check = getimagesize($_FILES['img_up']['tmp_name']);
-	    if($check === false) { array_push($View, "File is not an image!"); $err_bool = 1; }
-
-			// Check if File already Exists
-			if($err_bool == 0) { if(file_exists($target_file) ) { array_push($View, "File already exists!"); $err_bool = 1; } }
-
-			// Check File Size
-			if($err_bool == 0) { if($_FILES['img_up']['size'] > 800000) { array_push($View, "File is too large!"); $err_bool = 1; } }
-
-			// Allow only jpeg/jpg/png/gif
-			if($err_bool == 0) {
-				if($target_extension != "jpeg" && $target_extension != "jpg" && $target_extension != "png" &&  $target_extension != "gif") {
-					array_push($View, "Invalid file type!"); $err_bool = 1;
-				}
-			}
+			// Validate Selected File
+			$View = $YouRepo->validateFile();
 
 			// Save Data and Return View
-			if($err_bool == 1) { return view('DynamicView/you', compact('BaseView', 'View')); }
+			if(!empty($View)) { return view('DynamicView/you', compact('BaseView', 'View')); }
 			else {
+				// Target dir/file/extension
+				$target_dir = "uploads/" . $_SESSION['id'];
+				$target_file = $target_dir . basename($_FILES['img_up']['name']);
+				
 				// Store File
 				if(move_uploaded_file($_FILES['img_up']['tmp_name'], $target_file)) {
 					// Save File Path to Database
@@ -151,32 +64,9 @@ class YouController {
 				  $file->file = $target_file;
 				  $file->save();
 
-					// Get All Image Files of the User
-					$DB = \DB::select('SELECT fid, file FROM files WHERE id = :id', ['id' => $_SESSION['id']]);
-
-					// Image type Holders
-					$hold = array(
-			 		 'jpeg' => array(),
-			 		 'jpg' => array(),
-			 		 'png' => array(),
-			 		 'gif' => array()
-			 		 );
-
-					// Sort Images
-					foreach($DB as $d) {
-			 			// extract extension
-			 			$ext = pathinfo($d->file, PATHINFO_EXTENSION);
-
-			 			// push to one of the holders
-			 			if($ext == "jpeg") { $hold['jpeg'][$d->fid] = $d->file; }
-			 			if($ext == "jpg") { $hold['jpg'][$d->fid] = $d->file; }
-						if($ext == "png") { $hold['png'][$d->fid] = $d->file; }
-						if($ext == "gif") { $hold['gif'][$d->fid] = $d->file; }
-					}
-
-					// Push nonempty Data  to View
-					foreach($hold as $key => $val) { if(!empty($val)) { $BaseView[$key] = $val; } }
-
+					// Select * User Files and return to $BaseView
+					$YouRepo = new \App\Http\Controllers\Repository\DynamicRepository\YouRepository;
+					$BaseView = $YouRepo->selectUserFiles($BaseView);
 
 					// Return View With Success Message
 					array_push($View, "File Uploaded!");
