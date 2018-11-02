@@ -23,6 +23,9 @@ Route::get('/faq', 'StaticController@faq');
 Route::get('/you', 'DynamicController\YouController@get');
 Route::post('/you', 'DynamicController\YouController@post');
 
+// Search
+Route::get('/search', 'DynamicController\SearchController@get');
+Route::post('/search', 'DynamicController\SearchController@post');
 
 /* Forms */
 // Sign Up

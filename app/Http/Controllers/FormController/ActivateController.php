@@ -9,7 +9,7 @@ class ActivateController {
 		// check if hash exists
 		//$hash = \DB::table('users')->where('active', $_SERVER['QUERY_STRING'])->first();
 
-		$hash = \DB::table('users')->where('active', "shit")->first();
-		var_dump($hash);
+		//$hash = \DB::table('users')->where('active', "shit")->first();
+		//var_dump($hash);
 	}
 }

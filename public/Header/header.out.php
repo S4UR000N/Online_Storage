@@ -4,7 +4,7 @@
 
  <div id="navBtns" class="container row align-items-center justify-content-around col-11">
   <a class="header_pages btn border-top-0 border-bottom-0" href="http://os.local/">Home</a>
-  <a class="header_pages btn border-top-0 border-bottom-0" href="http://os.local/FAQ">FAQ</a>
+  <a class="header_pages btn border-top-0 border-bottom-0" href="http://os.local/faq">FAQ</a>
   <a class="header_pages btn border-top-0 border-bottom-0" href="http://os.local/signin">Sign In</a>
   <a class="header_pages btn border-top-0 border-bottom-0" href="http://os.local/signup">Sign Up</a>
  </div>
